@@ -108,7 +108,16 @@ public class CBMCentralManagerNative: CBMCentralManager {
         #endif
         
         private func getPeripheral(_ peripheral: CBPeripheral) -> CBMPeripheralNative {
-            return manager.peripherals[peripheral.identifier] ?? newPeripheral(peripheral)
+            guard let cachedPeripheral = manager.peripherals[peripheral.identifier] else {
+                return newPeripheral(peripheral)
+            }
+            
+            // In iOS 17 the CBPeriphal may be a different instance with the same identifier
+            guard cachedPeripheral.peripheral === peripheral else {
+                return newPeripheral(peripheral)
+            }
+            
+            return cachedPeripheral
         }
         
         private func newPeripheral(_ peripheral: CBPeripheral) -> CBMPeripheralNative {
